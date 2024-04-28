@@ -51,53 +51,51 @@ function Clinics() {
             year: 'numeric',
         },
     };
-    
-    const [show, setShow] = useState(false);
-    
-    function handleClose(state) {
-        setShow(state);
-    };
+// State to control visibility of the modal
+const [show, setShow] = useState(false);
+  
+// Function to close the modal 
+function handleClose(state) {
+  setShow(state);
+};
 
-    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+// State to control visibility of the booking modal
+const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-    const handleBookingClick = () => {
-        setIsBookingModalOpen(true);
-      };
-      
-    const handleModalCloseClick = () => {
-        setIsBookingModalOpen(false);
-    };
+// Handle the click of the booking button, opens the modal
+const handleBookingClick = () => {
+  setIsBookingModalOpen(true);
+};
 
-    const handleFormFieldChange = (e) => {
-        e.preventDefault();
-        setBookingForm({
-          ...bookingForm,
-          [e.target.name]: e.target.value
-        }); 
-      };
-      function formatDate(date) {
-        var d = new Date(date),
-            month = '' + (d.getMonth() + 1),
-            day = '' + d.getDate(),
-            year = d.getFullYear();
-    
-        if (month.length < 2) 
-            month = '0' + month;
-        if (day.length < 2) 
-            day = '0' + day;
-    
-        return [year, month, day].join('-');
-    }
-      
-      // For date-handler:
-      const handleChange = (event) => {
-        const {name, value} = event.target;
-        setBookingForm(prevFormState => {
-          return {...prevFormState, [name]: value};
-        });
-      };
+// Handle the close button click event of the modal
+const handleModalCloseClick = () => {
+  setIsBookingModalOpen(false);
+};
 
-      const [clinics, setClinics] = useState([]);
+// Handle change event of the form fields
+const handleFormFieldChange = (e) => {
+  e.preventDefault();
+  setBookingForm({
+    ...bookingForm,
+    [e.target.name]: e.target.value
+  }); 
+};
+
+// Function to format the date
+function formatDate(date) {
+//...
+}
+
+// Handle the date change event
+const handleChange = (event) => {
+  const {name, value} = event.target;
+  setBookingForm(prevFormState => {
+    return {...prevFormState, [name]: value};
+  });
+};
+
+// State to hold the clinincs
+const [clinics, setClinics] = useState([]);
   
       function addClinic(newClinic) {
           setClinics([...clinics, newClinic]);
@@ -115,60 +113,61 @@ function Clinics() {
         fetchClinics();
     }, []);
     
-    const handleBookingFormSubmit = (e) => {
-        e.preventDefault();
-        axios.post("/api/bookings", bookingForm)
-          .then((response) => {
-            console.log(response);
-            setBookingForm({/* initial form state */});
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-          
-      };
+// Function to handle form submission
+const handleBookingFormSubmit = (e) => {
+    e.preventDefault(); // Prevent form from refreshing the page
+    axios.post("/api/bookings", bookingForm) // Send a post request with form data
+        .then((response) => { // If request is successful ...
+            console.log(response); // Log response to console
+            setBookingForm({/* initial form state */}); // Reset form fields
+        })
+        .catch((error) => { // If there is an error ...
+            console.log(error); // Log error to console
+        });
+};
 
-   
+// State to store form data
+const [bookingForm, setBookingForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    date: {},
+    message: ''
+});
 
-    const [bookingForm, setBookingForm] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        date: {},
-        message: ''
-      });
+// Function to get text for ratings
+const getRatingText = (rating) => {
+    if (rating >= 4.5) {
+    return 'Very Good';
+    } else if (rating >= 4) {
+    return 'Good';
+    } else {
+    return 'Normal';
+    }
+}
 
-      const getRatingText = (rating) => {
-        if (rating >= 4.5) {
-          return 'Very Good';
-        } else if (rating >= 4) {
-          return 'Good';
-        } else {
-          return 'Normal';
-        }
-      }
-
-      const [sort, setSort] = useState(''); // State to keep track of selected sort option.
+// State to hold selected sort option
+const [sort, setSort] = useState('');
 
 // Function to handle sorting
 const handleSort = (event) => {
-  setSort(event.target.value);
+    setSort(event.target.value); // Update sort state to selected option
   
-  let sortedClinics;
-  switch(event.target.value){
-    case 'priceHigh':
-      sortedClinics = [...clinics].sort((a, b) => b.price - a.price);
-      break;
-    case 'priceLow':
-      sortedClinics = [...clinics].sort((a, b) => a.price - b.price);
-      break;
-    default:
-      sortedClinics = clinics;
-      break;
-  }
+    let sortedClinics;
+    switch(event.target.value){ // Sort clinics based on selected sort option
+        case 'priceHigh':
+            sortedClinics = [...clinics].sort((a, b) => b.price - a.price);
+            break;
+        case 'priceLow':
+            sortedClinics = [...clinics].sort((a, b) => a.price - b.price);
+            break;
+        default:
+            sortedClinics = clinics;
+            break;
+    }
   
-  setClinics(sortedClinics);
+    setClinics(sortedClinics); // Update clinics state with sorted clinics
 }
 
   return (
