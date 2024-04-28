@@ -1,4 +1,4 @@
-// authMiddleware.js
+// authMiddleware.js for authenticating user and check for medWorker
 
 const Users = require('../models/userModel');
 
