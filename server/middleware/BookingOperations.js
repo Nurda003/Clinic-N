@@ -1,3 +1,5 @@
+// middleware for getting all data from db
+
 const Booking = require('../models/bookingModel'); 
 
 const getAll = async () => {
