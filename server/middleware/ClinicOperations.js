@@ -1,3 +1,5 @@
+// mongodb query to get data and sort it
+
 const Clinic = require('../models/clinicsModel');
 
 const getAll = async () => {
