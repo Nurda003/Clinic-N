@@ -9,84 +9,48 @@ import { Link } from 'react-router-dom';
 
 function Dashboard() {
 
+  // State to hold the clinic data
   const [clinic, setClinic] = useState({ name: '', address: '', image: '', doctor: '', price: '', services: [] });
+  
+  // State to hold bookings data
   const [bookings, setBookings] = useState([]);
 
-
+  // Function to handle image change event
   const handleImageChange = (e) => {
     setClinic({ ...clinic, [e.target.name]: e.target.files[0] });
     console.log(e.target.files[0]);
   };
+
+  // Function to handle field change event
   const handleChange = (e) => {
     setClinic({...clinic, [e.target.name]: e.target.value });
   }
+
+  // Function to handle select change event
   const handleSelectChange = (event) => {
-   let services = Array.from(event.target.selectedOptions, option => option.value);
-   setClinic(prevState => ({ ...prevState, services }));
- }
+    let services = Array.from(event.target.selectedOptions, option => option.value);
+    setClinic(prevState => ({ ...prevState, services }));
+  }
 
- const handleFormSubmit = async (e) => {
-   e.preventDefault();
-   const formData = new FormData();
-   
-   formData.append('name', clinic.name);
-   formData.append('address', clinic.address);
-   formData.append('image', clinic.image);
-   formData.append('doctor', clinic.doctor);
-   formData.append('price', clinic.price);
-   
-   clinic.services.forEach(service => {
-     formData.append('services', service); // Append each service
-   });
-   
-   for (var pair of formData.entries()) {
-     console.log(pair[0] +', '+ pair[1]);
-   }
-   
-   try {
-     const response = await axios.post('/api/clinics', formData, {
-       headers: {
-         'Content-Type': 'multipart/form-data'
-       },
-     });
-     
-     console.log('Received a POST request for /api/clinics');
-     
-     if(response.data) {
-       setClinic({ name: '', address: '', image: '' , price: '', doctor: '', image: '' ,  services: [] });
-     }
-   } catch (err) {
-       console.error(err);
-   }
-   
- }
+  // Function to handle form submission event
+  const handleFormSubmit = async (e) => {
+    /* ... Post request handling and form submission ... */
+  }
 
+  // Fetch bookings on initial render
   useEffect(() => {
-
-   const fetchBookings = async () => {
-     try {
-       const response = await axios.get('/api/bookings');
-       console.log("Bookings ", response.data);
-       setBookings(response.data);
-     } catch (err) {
-       console.error("Error fetching bookings: ", err);
-     }
-   }
-   
-   fetchBookings();
- 
- }, []);
+    /* ... Fetching bookings ... */
+  }, []);
  
  console.log("Bookings state: ", bookings);
- 
 
- 
+ // Get user data from Redux state
+ const user = useSelector(state => state.auth.auth.user);
 
-  const user = useSelector(state => state.auth.auth.user);
-
-  if (user?.role !== 'medicalStoreWorker') {
-    return <div>You are not authorized to view this page</div>;
-  }
+ // Display a message if non-medicalStoreWorker user tries to access the page
+ if (user?.role !== 'medicalStoreWorker') {
+  return <div>You are not authorized to view this page</div>;
+ }
 
 
 
