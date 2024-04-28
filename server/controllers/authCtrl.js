@@ -173,89 +173,100 @@ const authCtrl = {
             return res.status(500).json({msg: err.message})
         }
     },
-    login: async (req, res) => {
-        try {
-            const { email, password } = req.body
-            console.log('Received login request with email:', email);
+// Verify login credentials provided by the user
+login: async (req, res) => {
+    try {
+        // Extract the email and password from the request body
+        const { email, password } = req.body;
 
-            const user = await Users.findOne({email})
-            .populate("username fullname")
+        // Search for a user in the database with the provided email
+        const user = await Users.findOne({email}).populate("username fullname");
 
-            if(!user){
-                console.log('User with email', email, 'not found.');
-                return res.status(400).json({msg: "This email does not exist."})
-            } 
+        // If a user with this email does not exist, respond with an error message
+        if(!user) return res.status(400).json({msg: "This email does not exist."});
 
-            console.log("user password: " + user.password);
-            console.log("plain password: " + password);
-            
-            const isMatch = await bcrypt.compare(password, user.password);
+        // Compare the hashed version of the provided password with the stored user password
+        const isMatch = await bcrypt.compare(password, user.password);
 
-            console.log("password match: " + isMatch);
-            
-            if(!isMatch){
-                console.log('Incorrect password for user with email', email);
-                return res.status(400).json({msg: "Password is incorrect."})
+        // If the password does not match, respond with an error message
+        if(!isMatch) return res.status(400).json({msg: "Password is incorrect."});
 
-            } 
-            const access_token = createAccessToken({id: user._id})
-            const refresh_token = createRefreshToken({id: user._id})
+        // If credentials are verified, generate access and refresh tokens 
+        const access_token = createAccessToken({id: user._id});
+        const refresh_token = createRefreshToken({id: user._id});
 
-            res.cookie('refreshtoken', refresh_token, {
-                httpOnly: true,
-                path: '/api/refresh_token',
-                maxAge: 30*24*60*60*1000 // 30days
-            })
+        // Set refresh token as a cookie
+        res.cookie('refreshtoken', refresh_token, {
+            httpOnly: true,
+            path: '/api/refresh_token',
+            maxAge: 30*24*60*60*1000 // 30days
+        });
 
+        // Respond with a success message, access token, and user data (without password)
+        res.json({
+            msg: 'Login Success!',
+            access_token,
+            user: {
+                ...user._doc,
+                password: ''
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({msg: err.message});
+    }
+},
+
+// Function to handle user logout
+logout: async (req, res) => {
+    try {
+        // Clear refresh token from cookies
+        res.clearCookie('refreshtoken', {path: '/api/refresh_token'});
+
+        // Respond with a success message
+        return res.json({msg: "Logged out!"});
+    } catch (err) {
+        return res.status(500).json({msg: err.message});
+    }
+},
+
+// Function to generate a new access token when the old one expires
+generateAccessToken: async (req, res) => {
+    try {
+        // Get refresh token from cookies
+        const rf_token = req.cookies.refreshtoken;
+
+        // If there's no refresh token present, ask user to login
+        if(!rf_token) return res.status(400).json({msg: "Please login now."});
+
+        // Try to verify the token and extract the user id
+        jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async(err, result) => {
+            if(err) return res.status(400).json({msg: "Please login now."});
+
+            // Extract the corresponding user from the database (without the password)
+            const user = await Users.findById(result.id).select("-password").populate('username fullname');
+
+            // If there's no user, respond with an error message
+            if(!user) return res.status(400).json({msg: "This does not exist."});
+
+            // Create a new access token 
+            const access_token = createAccessToken({id: result.id});
+
+            // Send the new access token and the user data in the response
             res.json({
-                msg: 'Login Success!',
                 access_token,
-                user: {
-                    ...user._doc,
-                    password: ''
-                }
-            })
-        } catch (err) {
-            console.error('Error during login:', err);
-            return res.status(500).json({msg: err.message})
-        }
-    },
-    logout: async (req, res) => {
-        try {
-            res.clearCookie('refreshtoken', {path: '/api/refresh_token'})
-            return res.json({msg: "Logged out!"})
-        } catch (err) {
-            return res.status(500).json({msg: err.message})
-        }
-    },
-    generateAccessToken: async (req, res) => {
-        try {
-            const rf_token = req.cookies.refreshtoken
-            if(!rf_token) return res.status(400).json({msg: "Please login now."})
+                user
+            });
+        });
+        
+    } catch (err) {
+        return res.status(500).json({msg: err.message});
+    }
+},
 
-            jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, async(err, result) => {
-                if(err) return res.status(400).json({msg: "Please login now."})
-
-                const user = await Users.findById(result.id).select("-password")
-                .populate('username fullname')
-
-                if(!user) return res.status(400).json({msg: "This does not exist."})
-
-                const access_token = createAccessToken({id: result.id})
-
-                res.json({
-                    access_token,
-                    user
-                })
-            })
-            
-        } catch (err) {
-            return res.status(500).json({msg: err.message})
-        }
-    },
-    uploadClinicImage: upload.single('image'),
-}
-
+// Function to handle image upload for clinic
+uploadClinicImage: upload.single('image'),
+// multer middleware is used for handling multipart/form-data, which is primarily used for uploading files.
+// 'image' is the key of the form-data under which image file is sent from the client.
 
 
 const createAccessToken = (payload) => {
