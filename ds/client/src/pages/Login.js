@@ -9,34 +9,43 @@ import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 
 function Login() {
-  const initialState = { email: '', password: '' };
-  const [userData, setUserData] = useState(initialState);
-  const { email, password } = userData;
+   // Initial State for Login form
+const initialState = { email: '', password: '' };
+// Hook for keeping track of user data
+const [userData, setUserData] = useState(initialState);
+const { email, password } = userData;
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { auth } = useSelector(state => state.auth);
+// Redux dispatch hook
+const dispatch = useDispatch();
+// Hook to navigate in react-router
+const navigate = useNavigate();
+// Access the authentication state from Redux
+const { auth } = useSelector(state => state.auth);
 
-  useEffect(() => {
-    if (auth?.token) {
-      navigate('/');
-    }
-  }, [auth, navigate]);
+// UseEffect to check if a token exists (User already authenticated), if so, navigate to homepage
+useEffect(() => {
+  if (auth?.token) {
+    navigate('/');
+  }
+}, [auth, navigate]);
 
-  const handleChangeInput = e => {
-    const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
-  };
+// Function to handle input change and update state
+const handleChangeInput = e => {
+  const { name, value } = e.target;
+  setUserData({ ...userData, [name]: value });
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const action = await dispatch(login(userData));
-      navigate('/');
-    } catch (error) {
-      console.log("Error logging in:", error);
-    }
-  };
+// Function to handle form submission, dispatch login action and handle errors
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const action = await dispatch(login(userData));
+    navigate('/');
+  } catch (error) {
+    console.log("Error logging in:", error);
+  }
+};
+
 
   return (
     <div>
