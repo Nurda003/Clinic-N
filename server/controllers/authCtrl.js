@@ -19,6 +19,9 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 
 const authCtrl = {
+ // fetches and returns all clinic records from the database, sorted by their creation date in descending order.
+
+
     getClinics : async (req, res) => {
         try {
             const clinics = await Clinic.find().sort({ createdAt: -1 });
@@ -28,7 +31,7 @@ const authCtrl = {
             res.status(500).send('An error occurred while fetching the clinics.');
         }
     },
-
+// creates and saves a new clinic record from the provided request body.
     createClinics : async (req, res) => {
         try {
             const { name, address, doctor, price, image } = req.body;
@@ -59,25 +62,31 @@ const authCtrl = {
         
     },
 
-
+// Registers a medical worker by creating a new user with specific details. If the role sent in the request body is not a 'medicalStoreWorker', 
+ // Handler function for registering a medical worker
     registerMedicalWorker: async (req, res) => {
         try {
             const { fullname, username, email, password, gender, role } = req.body
-            let newUserName = username.toLowerCase().replace(/ /g, '')
+            let newUserName = username.toLowerCase().replace(/ /g, '');
 
+            // If the user's role is not a medical store worker, reject the request
             if(role !== 'medicalStoreWorker') return res.status(400).json({msg: "Unauthorized role selection."});
 
-            const user_name = await Users.findOne({username: newUserName})
-            if(user_name) return res.status(400).json({msg: "This user name already exists."})
+            // Check if the username already exists in the database
+            const user_name = await Users.findOne({username: newUserName});
+            if(user_name) return res.status(400).json({msg: "This user name already exists."});
 
-            const user_email = await Users.findOne({email: email})
-            if(user_email) return res.status(400).json({msg: "This email already exists."})
+            // Check if the email already exists in the database
+            const user_email = await Users.findOne({email: email});
+            if(user_email) return res.status(400).json({msg: "This email already exists."});
 
-            if(password.length < 6)
-            return res.status(400).json({msg: "Password must be at least 6 characters."})
+            // Check if the password is at least 6 characters long
+            if(password.length < 6) return res.status(400).json({msg: "Password must be at least 6 characters."});
 
-            const passwordHash = await bcrypt.hash(password, 12)
+            // Hash the password for secure storage
+            const passwordHash = await bcrypt.hash(password, 12);
 
+            // Create a new user instance with hashed password
             const newUser = new Users({
                 fullname: fullname,
                 username: newUserName, 
@@ -87,17 +96,21 @@ const authCtrl = {
                 role: role
             });
 
-            const access_token = createAccessToken({id: newUser._id})
-            const refresh_token = createRefreshToken({id: newUser._id})
+            // Create access and refresh tokens
+            const access_token = createAccessToken({id: newUser._id});
+            const refresh_token = createRefreshToken({id: newUser._id});
 
+            // Set refresh token as a cookie
             res.cookie('refreshtoken', refresh_token, {
                 httpOnly: true,
                 path: '/api/refresh_token',
                 maxAge: 30*24*60*60*1000 // 30days
-            })
+            });
 
-            await newUser.save()
+            // Save newly created user in the database
+            await newUser.save();
 
+            // Respond with a success message, access token, and user data (without password)
             res.json({
                 msg: 'Register Success!',
                 access_token,
@@ -105,11 +118,11 @@ const authCtrl = {
                     ...newUser._doc,
                     password: ''
                 }
-            })
+            });
         } catch (err) {
             return res.status(500).json({msg: err.message})
         }
-},
+    },
 
     register: async (req, res) => {
         try {
