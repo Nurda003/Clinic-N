@@ -102,7 +102,10 @@ Before running the server, ensure to set up the required environment variables i
 
 The Dental Services Application is developed by the following authors:
 
-- name (id)
+- Kalmakhambet Nurdaulet (200103217)
+- Akhmetkazy Nurdaulet (200103370)
+- Nygmetkaliev Nurlan (200103217)
+
 
 For any inquiries or issues, please contact [200103217@stu.sdu.edu.is](mailto:200103217@stu.sdu.edu.is).
 
