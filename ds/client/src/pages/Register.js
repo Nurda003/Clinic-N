@@ -13,7 +13,8 @@ function Register() {
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [formData, setFormData] = useState({
+ // Initializing the formData state to hold form input values
+  const [formData, setFormData] = useState({
         username: '',
         email: '',
         password: '',
@@ -21,9 +22,11 @@ function Register() {
         role: 'user'
     });
 
-      const handleChange = (e) => {
+  // Function to handle input changes and set the formData state
+  const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
       };
+
 
       const handleSubmit = async (e) => {
         e.preventDefault();
