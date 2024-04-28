@@ -53,7 +53,7 @@ app.get('/api/clinics', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while trying to retrieve clinics' });
   }
 });
-
+// POST route for creating a new clinic record
 app.post('/api/clinics', upload.single('image'), (req, res) => {
   const rating = Number((Math.random() * (4.9 - 3.5) + 3.5).toFixed(1))
   const newClinic = new Clinic({
@@ -162,7 +162,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-
+// Fallback route
 app.get('*', (req, res) => {
   res.sendFile(
     path.resolve(__dirname, '../ds/client/build/index.html'),
@@ -174,7 +174,7 @@ app.get('*', (req, res) => {
   );
 });
 
-
+// MongoDB connection and Server startup
 const URI = process.env.MONGODB_URI;
 mongoose.connect(URI, {
     useNewUrlParser: true,
