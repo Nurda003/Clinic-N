@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const Clinic = require('../models/clinicsModel')
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
+const path = require('path');
 
 // Create storage engine for images using GridFS
 const storage = new GridFsStorage({
@@ -62,7 +63,6 @@ const authCtrl = {
         
     },
 
-// Registers a medical worker by creating a new user with specific details. If the role sent in the request body is not a 'medicalStoreWorker', 
  // Handler function for registering a medical worker
     registerMedicalWorker: async (req, res) => {
         try {
@@ -267,15 +267,14 @@ generateAccessToken: async (req, res) => {
 uploadClinicImage: upload.single('image'),
 // multer middleware is used for handling multipart/form-data, which is primarily used for uploading files.
 // 'image' is the key of the form-data under which image file is sent from the client.
-
+};
 
 const createAccessToken = (payload) => {
     return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'})
-}
-
-const createRefreshToken = (payload) => {
+  }
+  
+  const createRefreshToken = (payload) => {
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'})
-}
+  }
 
-
-module.exports = authCtrl
+module.exports = authCtrl;
