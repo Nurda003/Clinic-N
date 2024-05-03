@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames';
 import { useLocation } from 'react-router-dom';
-
+import { Link } from 'react-router-dom'
 
 function Footer() {
     const { pathname } = useLocation();
@@ -24,19 +24,16 @@ function Footer() {
                     </div>
                     <div className="flex items-center gap-5">
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext ">Home</h2>
+                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/'> Home</Link></h2>
                         </div>
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext ">Service</h2>
+                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Clini cs'>Clinics</Link></h2>
                         </div>
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext ">Blogs</h2>
+                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Journal'>Journal</Link></h2>
                         </div>
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext ">About</h2>
-                        </div>
-                        <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext ">Contact</h2>
+                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/ForDentals'>For Dentals</Link></h2>
                         </div>
                     </div>
                 </div>

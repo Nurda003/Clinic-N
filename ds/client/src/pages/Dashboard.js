@@ -34,12 +34,54 @@ function Dashboard() {
 
   // Function to handle form submission event
   const handleFormSubmit = async (e) => {
-    /* ... Post request handling and form submission ... */
+   e.preventDefault();
+   const formData = new FormData();
+   
+   formData.append('name', clinic.name);
+   formData.append('address', clinic.address);
+   formData.append('image', clinic.image);
+   formData.append('doctor', clinic.doctor);
+   formData.append('price', clinic.price);
+   
+   clinic.services.forEach(service => {
+     formData.append('services', service); // Append each service
+   });
+   
+   for (var pair of formData.entries()) {
+     console.log(pair[0] +', '+ pair[1]);
+   }
+   
+   try {
+     const response = await axios.post('/api/clinics', formData, {
+       headers: {
+         'Content-Type': 'multipart/form-data'
+       },
+     });
+     
+     console.log('Received a POST request for /api/clinics');
+     
+     if(response.data) {
+       setClinic({ name: '', address: '', image: '' , price: '', doctor: '', image: '' ,  services: [] });
+     }
+   } catch (err) {
+       console.error(err);
+   }
+   
   }
 
   // Fetch bookings on initial render
   useEffect(() => {
-    /* ... Fetching bookings ... */
+   const fetchBookings = async () => {
+      try {
+        const response = await axios.get('/api/bookings');
+        console.log("Bookings ", response.data);
+        setBookings(response.data);
+      } catch (err) {
+        console.error("Error fetching bookings: ", err);
+      }
+    }
+    
+    fetchBookings();
   }, []);
  
  console.log("Bookings state: ", bookings);
