@@ -27,7 +27,7 @@ function Footer() {
                             <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/'> Home</Link></h2>
                         </div>
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Clini cs'>Clinics</Link></h2>
+                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Clinics'>Clinics</Link></h2>
                         </div>
                         <div>
                             <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Journal'>Journal</Link></h2>

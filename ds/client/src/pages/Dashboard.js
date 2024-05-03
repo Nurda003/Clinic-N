@@ -26,11 +26,32 @@ function Dashboard() {
     setClinic({...clinic, [e.target.name]: e.target.value });
   }
 
+  const servicesList = [
+   "Braces and Orthodontic Treatments",
+   "Dental Cleanings and Check-ups",
+   "Teeth Whitening Services",
+   "Cosmetic Dentistry",
+   "Restorative Dentistry",
+   "Periodontal (Gum) Care",
+   "Oral Surgery",
+   "Emergency Dental Care"
+ ]
+ 
+ const handleCheckboxChange = (event) => {
+   if(event.target.checked) {
+     setClinic(prevClinic => ({...prevClinic, services: [...prevClinic.services, event.target.value]}));
+   } else {
+     setClinic(prevClinic => ({...prevClinic, services: prevClinic.services.filter(service => service !== event.target.value)}));
+   }
+ }
+
+  
+
   // Function to handle select change event
-  const handleSelectChange = (event) => {
-    let services = Array.from(event.target.selectedOptions, option => option.value);
-    setClinic(prevState => ({ ...prevState, services }));
-  }
+  const handleSelectChange = (e) => {
+   let selected = Array.from(e.target.selectedOptions, option => option.value);
+   setClinic(prevClinic => ({...prevClinic, services: selected}));
+ }
 
   // Function to handle form submission event
   const handleFormSubmit = async (e) => {
@@ -191,19 +212,17 @@ function Dashboard() {
                         <input className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none " aria-describedby="user_avatar_help" id="user_avatar"   type="file" name="image" accept="image/*" onChange={handleImageChange} />
                         <div className="mt-1 text-sm text-gray-500 " id="user_avatar_help">A profile picture is useful to confirm your account</div>
                       </div>
-                      <div className="w-full mb-5 group">
-                      <label for="services">Services:</label>
-                        <select multiple id="services" className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5' name="services[]" onChange={handleSelectChange}>
-                           <option value="Braces and Orthodontic Treatments">Braces and Orthodontic Treatments</option>
-                           <option value="Dental Cleanings and Check-ups">Dental Cleanings and Check-ups</option>
-                           <option value="Teeth Whitening Services">Teeth Whitening Services</option>
-                           <option value="Cosmetic Dentistry">Cosmetic Dentistry</option>
-                           <option value="Restorative Dentistry">Restorative Dentistry</option>
-                           <option value="Periodontal (Gum) Care">Periodontal (Gum) Care</option>
-                           <option value="Oral Surgery">Oral Surgery</option>
-                           <option value="Emergency Dental Care">Emergency Dental Care</option>
-                        </select>
-                      </div>
+                      <div className="w-full mb-5 group flex flex-col">
+                        <label htmlFor="services">Services:</label>
+                        <span className='border border-1 border-gray-500 rounded-md p-2 flex flex-col'>
+                           {servicesList.map((service, idx) => (
+                              <span key={idx}>
+                                 <input type="checkbox" className='mr-1' id={service} name="services[]" value={service} onChange={handleCheckboxChange}/>
+                                 <label htmlFor={service}>{service}</label>
+                              </span>
+                           ))}
+                        </span>
+                     </div>
 
                       <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center ">Submit</button>
                     </form>

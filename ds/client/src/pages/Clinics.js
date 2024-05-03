@@ -5,7 +5,7 @@ import Footer from '../comps/Footer'
 import heart from '../img/heart.png'
 
 import defa from '../img/register.png'
-
+import locationI from '../img/location.png'
 import Datepicker from "tailwind-datepicker-react"
 
 function Clinics() {
@@ -152,23 +152,29 @@ const [sort, setSort] = useState('');
 
 // Function to handle sorting
 const handleSort = (event) => {
-    setSort(event.target.value); // Update sort state to selected option
-  
+    setSort(event.target.value);
+    
     let sortedClinics;
-    switch(event.target.value){ // Sort clinics based on selected sort option
-        case 'priceHigh':
-            sortedClinics = [...clinics].sort((a, b) => b.price - a.price);
-            break;
-        case 'priceLow':
-            sortedClinics = [...clinics].sort((a, b) => a.price - b.price);
-            break;
-        default:
-            sortedClinics = clinics;
-            break;
+    switch(event.target.value){
+      case 'priceHigh':
+        sortedClinics = [...clinics].sort((a, b) => b.price - a.price);
+        break;
+      case 'priceLow':
+        sortedClinics = [...clinics].sort((a, b) => a.price - b.price);
+        break;
+      case 'ratingHigh':
+        sortedClinics = [...clinics].sort((a, b) => b.rating - a.rating);
+        break;
+      case 'ratingLow':
+        sortedClinics = [...clinics].sort((a, b) => a.rating - b.rating);
+        break;
+      default:
+        sortedClinics = clinics;
+        break;
     }
-  
-    setClinics(sortedClinics); // Update clinics state with sorted clinics
-}
+    
+    setClinics(sortedClinics);
+  }
 
   return (
     <div className='bg-navbg rounded-xl'>
@@ -189,6 +195,8 @@ const handleSort = (event) => {
                                 <option value="">Sort By</option>
                                 <option value="priceLow">Price - Low to High</option>
                                 <option value="priceHigh">Price - High to Low</option>
+                                <option value="ratingHigh">Rating - High to Low</option>
+                                <option value="ratingLow">Rating - Low to High</option>
                             </select>
                         </div>
                         
@@ -222,13 +230,13 @@ const handleSort = (event) => {
                         
                     {/*... rest of your code ... */}
                     <h1 className='text-2xl font-bold text-bigtext'>{clinic.name}</h1>
-                    <p className='text-base text-smalltext'>{clinic.address}</p>
+                    <p className='text-base text-smalltext'><span className='flex gap-3'><img src={locationI} alt="" width={30 + 'px'} srcset="" /> {clinic.address}</span></p>
                     {/*... rest of your code ... */}
                     <div className="flex flex-col gap-4">
-                        <p className='font-bold text-bigtext'>What we do? </p>
-                        <div className="flex items-center">
+                        <p className='font-bold text-bigtext'>Services : </p>
+                        <div className="flex flex-col gap-2">
                             {clinic.services && clinic.services.map(service => (
-                                <p className='font-semibold' key={service}>{service}</p>
+                                <p className='font-semibold flex ' key={service}>  {service}    </p>
                             ))}
                         </div>
                         
@@ -241,9 +249,9 @@ const handleSort = (event) => {
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <p className='text-base text-smalltext font-semibold'>Starting from</p>
-                            <p className='text-2xl text-blue-700 font-bold max-w-80'>Doctor: {clinic.doctor}</p>
-                            <p className='text-2xl text-blue-700 font-bold'>${clinic.price}</p>
+                            <p className='text-base text-smalltext font-semibold'>Specialist</p>
+                            <p className='text-xl text-blue-700 font-bold max-w-80'>Doctor: {clinic.doctor}</p>
+                            <p className='text-3xl text-blue-700 font-bold'>${clinic.price}</p>
 
                         </div>
                     </div>
