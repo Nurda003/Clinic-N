@@ -39,7 +39,7 @@ function NavBar() {
         onClick={toggleDropdown} 
       >
         <span className="sr-only">Open user menu</span>
-        <img className="w-14 h-14 rounded-full" src={prof} alt="User Profile" />
+        <img className="w-14 h-14 rounded-full bg-white" src={prof} alt="User Profile" />
       </button>
 
       <div className={`z-50 mt-14 text-base bg-navbg list-none rounded-lg shadow-lg ${dropdownOpen ? 'block' : 'hidden'} absolute right-0 top-1 w-60`}              

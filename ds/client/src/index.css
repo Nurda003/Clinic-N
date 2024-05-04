@@ -4,8 +4,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-@layer base {
-    html {
-      font-family: Montserrat, system-ui sans-serif;
-    }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Now set a global font for all elements */
+body {
+  font-family: 'Montserrat', sans-serif;
+}

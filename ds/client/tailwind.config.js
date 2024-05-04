@@ -24,8 +24,8 @@ module.exports = {
         bigtext: '#011632',
         smalltext: '#3C4959',
         clock:'#25B4F8',
-        card: '#F2F0F2'
-    
+        card: '#F2F0F2',
+        price:'#00449D',
       },
       fontSize: {
         '6.5' : '65px',

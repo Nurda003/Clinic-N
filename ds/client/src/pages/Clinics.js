@@ -5,7 +5,7 @@ import Footer from '../comps/Footer'
 import heart from '../img/heart.png'
 
 import defa from '../img/register.png'
-import locationI from '../img/location.png'
+import locationI from '../img/location.svg'
 import Datepicker from "tailwind-datepicker-react"
 
 function Clinics() {
@@ -176,6 +176,12 @@ const handleSort = (event) => {
     setClinics(sortedClinics);
   }
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+const handleSearchChange = (event) => {
+  setSearchTerm(event.target.value);
+}
+
   return (
     <div className='bg-navbg rounded-xl'>
         <NavBar />
@@ -187,11 +193,20 @@ const handleSort = (event) => {
                         <h1 className='text-6xl text-blue-600 font-semibold mr-10% '>Clinics</h1>
 
                     </div>
+                    <div className="">
+                        <input 
+                        type="text" 
+                        value={searchTerm} 
+                        onChange={handleSearchChange} 
+                        placeholder="Search services..."
+                        className="h-12 w-60 flex justify-between items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-white border-2 border-gray-400 rounded-lg"
+                        />
+                    </div>
                     
                     <div className="flex items-center gap-10">
 
-                        <div id="dropdown-button" data-dropdown-toggle="dropdown" className="h-12 w-60 flex justify-between items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-white border-2 border-gray-400 rounded-lg" type="button">
-                            <select value={sort} onChange={handleSort}>
+                        <div id="dropdown-button" data-dropdown-toggle="dropdown" className="h-12  flex justify-between items-center px-2 text-sm font-medium text-center text-gray-900 bg-white border-2 border-gray-400 rounded-lg" type="button">
+                            <select value={sort} className='p-2 flex flex-col gap-3' onChange={handleSort}>
                                 <option value="">Sort By</option>
                                 <option value="priceLow">Price - Low to High</option>
                                 <option value="priceHigh">Price - High to Low</option>
@@ -213,9 +228,14 @@ const handleSort = (event) => {
         <div className=" flex flex-col justify-center items-center py-5">
             
         <div className="flex flex-col w-11/12 justify-center items-center">
-
-
-        {clinics.map((clinic) => (
+        {
+        clinics
+            .filter(clinic => 
+                clinic.services.some(service => 
+                    service.toLowerCase().startsWith(searchTerm.toLowerCase())
+                )
+            )
+            .map((clinic) => (
             
                 <div className="flex w-full gap-6 p-3 rounded-2xl bg-white items-center mt-10">
                     <div className="w-heroimg">
@@ -230,14 +250,14 @@ const handleSort = (event) => {
                         
                     {/*... rest of your code ... */}
                     <h1 className='text-2xl font-bold text-bigtext'>{clinic.name}</h1>
-                    <p className='text-base text-smalltext'><span className='flex gap-3'><img src={locationI} alt="" width={30 + 'px'} srcset="" /> {clinic.address}</span></p>
+                    <p className='text-base text-smalltext'><span className='flex gap-3'><img src={locationI} alt="" width={25 + 'px'} srcset="" /> {clinic.address}</span></p>
                     {/*... rest of your code ... */}
                     <div className="flex flex-col gap-4">
                         <p className='font-bold text-bigtext'>Services : </p>
-                        <div className="flex flex-col gap-2">
-                            {clinic.services && clinic.services.map(service => (
-                                <p className='font-semibold flex ' key={service}>  {service}    </p>
-                            ))}
+                        <div className="flex flex-col w-710 gap-2">
+                            {clinic.services && 
+                                <p className='font-semibold flex'>{clinic.services.join(' / ')}</p>
+                            }
                         </div>
                         
 
@@ -250,8 +270,8 @@ const handleSort = (event) => {
                         </div>
                         <div className="flex flex-col gap-2">
                             <p className='text-base text-smalltext font-semibold'>Specialist</p>
-                            <p className='text-xl text-blue-700 font-bold max-w-80'>Doctor: {clinic.doctor}</p>
-                            <p className='text-3xl text-blue-700 font-bold'>${clinic.price}</p>
+                            <p className='text-xl text-blue-700 font-semibold max-w-80'>Dr. {clinic.doctor}</p>
+                            <p className='text-3xl text-price font-bold'>${clinic.price}</p>
 
                         </div>
                     </div>
@@ -360,6 +380,7 @@ const handleSort = (event) => {
         </div>
     </div>
 )}
+    
         
         </div>
         </div>
