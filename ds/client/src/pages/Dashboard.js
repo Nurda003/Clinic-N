@@ -75,7 +75,8 @@ function Dashboard() {
    try {
      const response = await axios.post('/api/clinics', formData, {
        headers: {
-         'Content-Type': 'multipart/form-data'
+         'Content-Type': 'multipart/form-data',
+         
        },
      });
      
@@ -93,18 +94,36 @@ function Dashboard() {
   // Fetch bookings on initial render
   useEffect(() => {
    const fetchBookings = async () => {
-      try {
-        const response = await axios.get('/api/bookings');
-        console.log("Bookings ", response.data);
-        setBookings(response.data);
-      } catch (err) {
-        console.error("Error fetching bookings: ", err);
-      }
-    }
-    
-    fetchBookings();
-  }, []);
- 
+      
+     // Retrieve refresh token from cookie
+     const tokenCookie = document.cookie.split("; ").find(cookie => cookie.startsWith("refreshtoken="));
+     
+     // Ensure tokenCookie exists before processing it, if not handle error
+     if (!tokenCookie) {
+       console.error("Error fetching token: No token found");
+       return;
+     }
+
+     // Extract the actual token value
+     const token = tokenCookie.split('=')[1];
+
+     try {
+       const response = await axios.get('/api/bookings', {
+         headers: {
+           'Authorization': `Bearer ${token}` // The token retrieved from the cookie
+         }
+       });
+   
+       console.log("Bookings ", response.data);
+       setBookings(response.data);
+       
+     } catch (err) {
+       console.error("Error fetching bookings: ", err);
+     }
+   }
+   
+   fetchBookings();
+ }, []);
  console.log("Bookings state: ", bookings);
 
  // Get user data from Redux state

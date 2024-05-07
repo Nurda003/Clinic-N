@@ -7,6 +7,7 @@ const bookingSchema = new mongoose.Schema({
   phoneNumber: String,
   date: Date,
   message: String,
+  userId: String,
 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

@@ -14,6 +14,7 @@ const NodeCache = require( "node-cache" );
 const imageCache = new NodeCache();
 const buildPath = path.resolve(__dirname, '../ds/client/build');
 const Booking = require('../server/models/bookingModel');
+const auth = require("../server/controllers/auth"); 
 
 app.use(express.json());
 app.use(cors());
@@ -123,7 +124,8 @@ app.get('/api/image/:filename', async (req, res) => {
 
 //router for back end booking
 
-app.post('/api/bookings', (req, res) => {
+app.post('/api/bookings',auth, (req, res) => {
+  
   const newBooking = new Booking({
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -131,6 +133,7 @@ app.post('/api/bookings', (req, res) => {
     phoneNumber: req.body.phoneNumber,
     date: req.body.date,
     message: req.body.message,
+      Id: req.user._id,
   });
 
   newBooking.save()
@@ -139,12 +142,24 @@ app.post('/api/bookings', (req, res) => {
 });
 
 
-//booking router
+async function myBookingHandler(req, res) {
+  try {
+      const myBookings = await BookingOperations.getAll({userId: req.user._id});  
+      res.json(myBookings);
+  } catch (error) {
+      res.status(500).json({ error: error.toString() });
+  }
+}
+
+app.get('/api/my-bookings', auth, myBookingHandler);
+
+
+
 const BookingOperations = require('../server/middleware/BookingOperations');
 app.get('/api/bookings', async (req, res) => {
   try {
     // Query the database for all bookings
-    const bookings = await BookingOperations.getAll();
+    const bookings = await BookingOperations.getAll(); 
   
     // Send the results back to the client
     return res.json(bookings);
