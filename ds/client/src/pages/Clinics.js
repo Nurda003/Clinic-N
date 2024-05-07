@@ -212,6 +212,8 @@ const handleSearchChange = (event) => {
                                 <option value="priceHigh">Price - High to Low</option>
                                 <option value="ratingHigh">Rating - High to Low</option>
                                 <option value="ratingLow">Rating - Low to High</option>
+                                <option value="ratingLow">Test</option>
+
                             </select>
                         </div>
                         
