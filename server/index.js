@@ -17,7 +17,13 @@ const Booking = require('../server/models/bookingModel');
 const auth = require("../server/controllers/auth"); 
 
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+  origin: 'https://clinic-n-0cf3928b88e1.herokuapp.com/', // replace with your front-end domain
+  credentials: true, // this allows session cookies to be sent back and forth
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 const client = new MongoClient(process.env.MONGODB_URI);
