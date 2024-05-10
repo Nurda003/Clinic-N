@@ -91,32 +91,17 @@ function Dashboard() {
    
   }
 
-  // Fetch bookings on initial render
   useEffect(() => {
    const fetchBookings = async () => {
-      
-     // Retrieve refresh token from cookie
-     const tokenCookie = document.cookie.split("; ").find(cookie => cookie.startsWith("refreshtoken="));
-     
-     // Ensure tokenCookie exists before processing it, if not handle error
-     if (!tokenCookie) {
-       console.error("Error fetching token: No token found");
-       return;
-     }
-
-     // Extract the actual token value
-     const token = tokenCookie.split('=')[1];
-
      try {
+       const token = localStorage.getItem('authToken');
        const response = await axios.get('/api/bookings', {
          headers: {
-           'Authorization': `Bearer ${token}` // The token retrieved from the cookie
+           'Authorization': `Bearer ${token}`
          }
        });
-   
        console.log("Bookings ", response.data);
        setBookings(response.data);
-       
      } catch (err) {
        console.error("Error fetching bookings: ", err);
      }
@@ -124,6 +109,7 @@ function Dashboard() {
    
    fetchBookings();
  }, []);
+ 
  console.log("Bookings state: ", bookings);
 
  // Get user data from Redux state

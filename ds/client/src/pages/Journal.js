@@ -8,19 +8,41 @@ import cli3 from '../img/clinics3.png'
 import Footer from '../comps/Footer'
 
 function Journal() {
-  // Using React Hooks, establish a state variabel for bookings
-  const [bookings, setBookings] = useState([]); 
+    const [bookings, setBookings] = useState([]);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch the user's bookings when the component mounts
-    axios.get('/api/my-bookings') // Use your authenticated request handler here
-      .then((response) => {
-        setBookings(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching ", error);
-      })
-  }, []);
+    useEffect(() => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            setError("You must be logged in to view bookings.");
+            setIsLoading(false);
+            return;
+        }
+
+        axios.get('/api/my-bookings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => {
+            setBookings(response.data);
+            setIsLoading(false);
+            if (response.data.length === 0) {
+                setError("No bookings found.");
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching bookings: ", error);
+            setError("Failed to fetch bookings. Please try again.");
+            setIsLoading(false);
+        });
+    }, []);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+
+
   return (
     <div className='bg-navbg rounded-xl '>
         <NavBar />
@@ -53,12 +75,16 @@ function Journal() {
 
 
                 <div className="flex w-full  gap-10 p-3 rounded-2xl bg-white items-center mt-10">
-                    {bookings.map((booking, index) => (
-                        <div key={index}>
-                            {/* Rest of the booking info here like email, phonenumber, date etc */}
-                            <h1>{booking.firstName} {booking.lastName}</h1>
-                        </div>
-                    ))}
+                {error && <p>{error}</p>}
+            {bookings.map((booking, index) => (
+                <div key={index}>
+                    <h2>{booking.clinicId ? booking.clinicId.name : 'Clinic details not available'}</h2>
+                    <p>Date: {booking.date ? new Date(booking.date).toLocaleDateString() : 'Invalid Date'}</p>
+                    <p>Location: {booking.clinicId ? booking.clinicId.location : 'No location available'}</p>
+                    <p>Services: {booking.clinicId && booking.clinicId.services ? booking.clinicId.services.join(', ') : 'No services listed'}</p>
+                    <p>Message: {booking.message}</p>
+                </div>
+            ))}
                 </div>
                 
                 

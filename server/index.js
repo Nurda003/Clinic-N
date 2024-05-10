@@ -16,8 +16,12 @@ const buildPath = path.resolve(__dirname, '../ds/client/build');
 const Booking = require('../server/models/bookingModel');
 const auth = require("../server/controllers/auth"); 
 
+
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:3000' // Allow only the frontend origin
+}));
 app.use(cookieParser());
 
 const client = new MongoClient(process.env.MONGODB_URI);
@@ -124,36 +128,43 @@ app.get('/api/image/:filename', async (req, res) => {
 
 //router for back end booking
 
-app.post('/api/bookings',auth, (req, res) => {
-  
-  const newBooking = new Booking({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    phoneNumber: req.body.phoneNumber,
-    date: req.body.date,
-    message: req.body.message,
-      Id: req.user._id,
-  });
-
-  newBooking.save()
-    .then(booking => res.json(booking))
-    .catch(err => res.status(400).send('Error:' + err));
+app.post('/api/bookings', auth, async (req, res) => {
+  try {
+      const { firstName, lastName, email, phoneNumber, date, message, clinicId } = req.body;
+      if (!clinicId || !mongoose.Types.ObjectId.isValid(clinicId)) {
+          return res.status(400).json({ msg: "Invalid or missing clinicId" });
+      }
+      const clinic = await Clinic.findById(clinicId);
+      if (!clinic) {
+          return res.status(404).json({ msg: "Clinic not found" });
+      }
+      const newBooking = new Booking({
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+          date,
+          message,
+          userId: req.user._id,
+          clinicId
+      });
+      await newBooking.save();
+      res.json(newBooking);
+  } catch (err) {
+      console.error('Error creating booking:', err);
+      res.status(500).json({ msg: 'Error creating booking', error: err.message });
+  }
 });
 
-
-async function myBookingHandler(req, res) {
+app.get('/api/my-bookings', auth, async (req, res) => {
   try {
-      const myBookings = await BookingOperations.getAll({userId: req.user._id});  
-      res.json(myBookings);
-  } catch (error) {
-      res.status(500).json({ error: error.toString() });
+    const userId = req.user._id; // Extract user ID from authenticated token
+    const bookings = await Booking.find({ userId: userId }).populate('clinicId');
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-}
-
-app.get('/api/my-bookings', auth, myBookingHandler);
-
-
+});
 
 const BookingOperations = require('../server/middleware/BookingOperations');
 app.get('/api/bookings', async (req, res) => {

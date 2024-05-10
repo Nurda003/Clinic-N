@@ -71,6 +71,10 @@ const handleBookingClick = () => {
 const handleModalCloseClick = () => {
   setIsBookingModalOpen(false);
 };
+const handleClinicChange = (event) => {
+    setSelectedClinicId(event.target.value);
+};
+  
 
 // Handle change event of the form fields
 const handleFormFieldChange = (e) => {
@@ -80,11 +84,6 @@ const handleFormFieldChange = (e) => {
     [e.target.name]: e.target.value
   }); 
 };
-
-// Function to format the date
-function formatDate(date) {
-//...
-}
 
 // Handle the date change event
 const handleChange = (event) => {
@@ -114,27 +113,49 @@ const [clinics, setClinics] = useState([]);
     }, []);
     
 // Function to handle form submission
-const handleBookingFormSubmit = (e) => {
-    e.preventDefault(); // Prevent form from refreshing the page
-    axios.post("/api/bookings", bookingForm) // Send a post request with form data
-        .then((response) => { // If request is successful ...
-            console.log(response); // Log response to console
-            setBookingForm({/* initial form state */}); // Reset form fields
-        })
-        .catch((error) => { // If there is an error ...
-            console.log(error); // Log error to console
-        });
-};
-
-// State to store form data
-const [bookingForm, setBookingForm] = useState({
+const [selectedClinicId, setSelectedClinicId] = useState('');
+const initialFormState = {
     firstName: '',
     lastName: '',
     email: '',
     phoneNumber: '',
-    date: {},
-    message: ''
-});
+    date: '',
+    message: '',
+    clinicId: '' // Assuming you have a field to select or input clinicId
+};
+
+const [bookingForm, setBookingForm] = useState(initialFormState);
+
+
+const handleBookingFormSubmit = (e) => {
+    e.preventDefault();
+    const bookingData = {
+        firstName: bookingForm.firstName,
+        lastName: bookingForm.lastName,
+        email: bookingForm.email,
+        phoneNumber: bookingForm.phoneNumber,
+        date: bookingForm.date,
+        message: bookingForm.message,
+        clinicId: selectedClinicId,
+    };
+
+    console.log("Submitting booking data:", bookingData);
+
+    axios.post("/api/bookings", bookingData, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+    })
+    .then((response) => {
+        console.log("Booking successful:", response.data);
+        setBookingForm(initialFormState);
+    })
+    .catch((error) => {
+        console.error("Error creating booking:", error.response ? error.response.data : "Unknown error");
+    });
+};
+
+// Then use it to reset the form
 
 // Function to get text for ratings
 const getRatingText = (rating) => {
@@ -212,8 +233,6 @@ const handleSearchChange = (event) => {
                                 <option value="priceHigh">Price - High to Low</option>
                                 <option value="ratingHigh">Rating - High to Low</option>
                                 <option value="ratingLow">Rating - Low to High</option>
-                                <option value="ratingLow">Test</option>
-
                             </select>
                         </div>
                         
@@ -371,6 +390,11 @@ const handleSearchChange = (event) => {
                         value={bookingForm.message}
                         
                         ></textarea>
+                        <select value={selectedClinicId} onChange={handleClinicChange}>
+                            {clinics.map(clinic => (
+                                <option key={clinic._id} value={clinic._id}>{clinic.name}</option>
+                            ))}
+                        </select>
 
                     </div>
                     <button className='w-1/2 mx-auto mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-4 rounded-lg px-4' >Book an appointment</button>

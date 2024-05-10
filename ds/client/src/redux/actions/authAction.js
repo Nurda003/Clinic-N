@@ -9,7 +9,6 @@ export const TYPES = {
 export const login = (data) => async (dispatch) => {
   try {
     const res = await axios.post('/api/login', data);
-
     if (res.status === 200 && res.data.user && res.data.access_token) {
       const { user, access_token, refresh_token } = res.data;
       dispatch({
@@ -19,8 +18,8 @@ export const login = (data) => async (dispatch) => {
           user: user,
         },
       });
-      
       localStorage.setItem('firstLogin', true);
+      localStorage.setItem('authToken', access_token);
       localStorage.setItem('user', JSON.stringify(user));  
       localStorage.setItem('refreshToken', refresh_token); 
     }
@@ -49,7 +48,10 @@ export const logout = () => async (dispatch) => {
   });
 
   localStorage.removeItem('firstLogin');
-  localStorage.removeItem('refreshToken'); // Remove the refresh token
+  localStorage.removeItem('user');
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('refreshToken');
+// Remove the refresh token
 
   dispatch({
     type: "NOTIFY",
