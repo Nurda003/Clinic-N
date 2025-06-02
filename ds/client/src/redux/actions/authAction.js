@@ -68,21 +68,9 @@ export const register = (data) => async (dispatch) => {
 
   try {
     const res = await postDataAPI(`api/${endpoint}`, data);
-      console.log('register response: ', res);
-      console.log('register data: ', data);
+    console.log('register response: ', res);
+    console.log('register data: ', data);
     if (res.status >= 200 && res.status < 300) {
-      dispatch({
-        type: "AUTH",
-        payload: {
-          token: res.data.access_token,
-          user: res.data.user
-        }
-      });
-
-      localStorage.setItem('firstLogin', true);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      localStorage.setItem('refreshToken', res.data.refresh_token); // Store the refresh token
-
       dispatch({
         type: "NOTIFY",
         payload: {
@@ -93,24 +81,27 @@ export const register = (data) => async (dispatch) => {
       return { success: true };
 
     } else {
+      const errorMsg = res.data.msg || 'Registration failed';
       dispatch({
         type: 'NOTIFY',
         payload: {
-          error: res.data.msg
+          error: errorMsg
         }
       });
 
-      return { success: false };
+      return { success: false, error: errorMsg };
     }
 
   } catch (error) { 
-      dispatch({
-        type: 'NOTIFY',
-        payload: {
-          error: 'An unexpected error occurred. Please try again.'
-      }});
+    const errorMsg = error.response?.data?.msg || 'An unexpected error occurred. Please try again.';
+    dispatch({
+      type: 'NOTIFY',
+      payload: {
+        error: errorMsg
+      }
+    });
 
-      return { success: false };
+    return { success: false, error: errorMsg };
   }
 }
 

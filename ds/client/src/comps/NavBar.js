@@ -7,23 +7,12 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function NavBar() {
     const { auth } = useSelector(state => state.auth);
-    console.log(auth);
+    console.log('auth', auth);
     const dispatch = useDispatch();
-    const navigate = useNavigate();  // Use useHistory hook
+    const navigate = useNavigate();
 
-    const user = useSelector(state => state.auth.user);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-
-    const handleLogout = () => {
-      if(auth?.token) {
-        dispatch(logout());
-      }
-      else {
-        navigate('/Login');
-      }
-    }
-
 
   return (
     <div className='flex justify-center items-center '>
@@ -57,18 +46,15 @@ function NavBar() {
         <ul className="py-2" aria-labelledby="user-menu-button">
           {auth.user?.role === 'medicalStoreWorker' && 
             <li>
-              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <Link to='/Dashboard'>Dashboard</Link>
-              </a>
+              <Link to='/Dashboard' className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Dashboard
+              </Link>
             </li>
           }
           <li>
-            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-          </li>
-          <li>
             <button 
               onClick={() => dispatch(logout())} 
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out
+              className="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left">Sign Out
             </button>
           </li>
         </ul>
@@ -92,19 +78,21 @@ function NavBar() {
           <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1 mr-33" id="navbar-user">
                     <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 w-full border border-gray-100 rounded-lg  md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 text-base ">
                         <li>
-                            <a href="#" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 " aria-current="page"><Link to='/'>Home</Link></a>
+                            <Link to='/' className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 " aria-current="page">Home</Link>
                         </li>
                         <li>
-                            <a href="#" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 "><Link to='/Clinics'>Clinics</Link></a>
+                            <Link to='/Clinics' className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 ">Clinics</Link>
                         </li>
+                        {auth?.token && auth?.user?.role === 'user' &&
+                          <li>
+                              <Link to='/Journal' className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 ">Journal</Link>
+                          </li>
+                        }
                         <li>
-                            <a href="#" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 "><Link to='/Journal'>Journal</Link></a>
-                        </li>
-                        <li>
-                            <a href="#" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 "><Link to='/ForDentals'>For Dentals</Link></a>
+                            <Link to='/ForDentals'className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 ">For Dentals</Link>
                         </li>
                     </ul>
-          </div>
+              </div>
             </div>
         </nav>
 

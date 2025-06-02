@@ -2,9 +2,11 @@ import React from 'react'
 import classnames from 'classnames';
 import { useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux';
 
 function Footer() {
     const { pathname } = useLocation();
+    const { auth } = useSelector(state => state.auth);
     
     const padClass = classnames({
         'px-20': pathname === '/',
@@ -24,16 +26,18 @@ function Footer() {
                     </div>
                     <div className="flex items-center gap-5">
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/'> Home</Link></h2>
+                            <Link to='/' className="mb-6 text-base font-semibold text-smalltext ">Home</Link>
                         </div>
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Clinics'>Clinics</Link></h2>
+                            <Link to='/Clinics' className="mb-6 text-base font-semibold text-smalltext ">Clinics</Link>
                         </div>
+                        {auth?.token && auth?.user?.role === 'user' &&
+                            <div>
+                                <Link to='/Journal' className="mb-6 text-base font-semibold text-smalltext ">Journal</Link>
+                            </div>
+                        }
                         <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/Journal'>Journal</Link></h2>
-                        </div>
-                        <div>
-                            <h2 className="mb-6 text-base font-semibold text-smalltext "><Link to='/ForDentals'>For Dentals</Link></h2>
+                            <Link to='/ForDentals' className="mb-6 text-base font-semibold text-smalltext ">For Dentals</Link>
                         </div>
                     </div>
                 </div>
