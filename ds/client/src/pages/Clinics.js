@@ -23,7 +23,7 @@ function Clinics() {
     const [searchTerm, setSearchTerm] = useState('');
     const [bookingForm, setBookingForm] = useState(initialFormState);
     const [clinics, setClinics] = useState([]);
-    const [isBookingModalOpen, setIsBookingModalOpen] = useState(true);
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [sort, setSort] = useState('');
 
     const handleBookingClick = (clinicId) => {
