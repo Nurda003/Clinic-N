@@ -145,7 +145,7 @@ app.post('/api/bookings', auth, async (req, res) => {
           phoneNumber,
           date,
           message,
-          userId: req.user._id,
+          userId: req.user.id,
           clinicId
       });
       await newBooking.save();
@@ -158,7 +158,7 @@ app.post('/api/bookings', auth, async (req, res) => {
 
 app.get('/api/my-bookings', auth, async (req, res) => {
   try {
-    const userId = req.user._id; // Extract user ID from authenticated token
+    const userId = req.user.id; // Extract user ID from authenticated token
     const bookings = await Booking.find({ userId: userId }).populate('clinicId');
     res.json(bookings);
   } catch (err) {
@@ -181,7 +181,10 @@ app.get('/api/bookings', async (req, res) => {
 });
 
 const authRouter = require('./routes/authRouter');
+const partnershipRouter = require('./routes/partnership');
+
 app.use('/api', authRouter);
+app.use('/api/partnership', partnershipRouter);
 
 app.use(function(req, res, next) {
   console.log(`${req.method} request for '${req.url}'`);
