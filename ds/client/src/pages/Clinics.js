@@ -89,7 +89,7 @@ function Clinics() {
         })
         .then((response) => {
             console.log("Booking successful:", response.data);
-            setBookingForm(initialFormState);
+            handleModalCloseClick();
         })
         .catch((error) => {
             console.error("Error creating booking:", error.response ? error.response.data : "Unknown error");
