@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Footer from '../comps/Footer';
-import { useEffect } from 'react';
-
-import axios from 'axios'; // import axios in your dashboard component
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function Dashboard() {
-  // State to hold the clinic data
+  const user = useSelector(state => state.auth.auth.user);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [clinic, setClinic] = useState({
     name: '',
     address: '',
@@ -16,17 +15,14 @@ function Dashboard() {
     price: '',
     services: [],
   });
-
-  // State to hold bookings data
   const [bookings, setBookings] = useState([]);
+  const [myClinics, setMyClinics] = useState([]);
 
-  // Function to handle image change event
   const handleImageChange = e => {
     setClinic({ ...clinic, [e.target.name]: e.target.files[0] });
     console.log(e.target.files[0]);
   };
 
-  // Function to handle field change event
   const handleChange = e => {
     setClinic({ ...clinic, [e.target.name]: e.target.value });
   };
@@ -56,13 +52,34 @@ function Dashboard() {
     }
   };
 
-  // Function to handle select change event
-  const handleSelectChange = e => {
-    let selected = Array.from(e.target.selectedOptions, option => option.value);
-    setClinic(prevClinic => ({ ...prevClinic, services: selected }));
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
   };
 
-  // Function to handle form submission event
+  const fetchMyClinics = async () => {
+    const response = await axios.get('/api/my-clinics', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+    setMyClinics(response.data);
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get('/api/bookings', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Bookings ', response.data);
+      setBookings(response.data);
+    } catch (err) {
+      console.error('Error fetching bookings: ', err);
+    }
+  };
+
   const handleFormSubmit = async e => {
     e.preventDefault();
     const formData = new FormData();
@@ -74,7 +91,7 @@ function Dashboard() {
     formData.append('price', clinic.price);
 
     clinic.services.forEach(service => {
-      formData.append('services', service); // Append each service
+      formData.append('services', service);
     });
 
     for (var pair of formData.entries()) {
@@ -82,55 +99,50 @@ function Dashboard() {
     }
 
     try {
-      const response = await axios.post('/api/clinics', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      console.log('Received a POST request for /api/clinics');
-
-      if (response.data) {
-        setClinic({
-          name: '',
-          address: '',
-          image: '',
-          price: '',
-          doctor: '',
-          image: '',
-          services: [],
+      await axios
+        .post('/api/clinics', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        })
+        .then(() => {
+          toggleModal();
+          setClinic({
+            name: '',
+            address: '',
+            image: '',
+            price: '',
+            doctor: '',
+            services: [],
+          });
+          fetchMyClinics();
         });
-      }
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await axios.get('/api/bookings', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log('Bookings ', response.data);
-        setBookings(response.data);
-      } catch (err) {
-        console.error('Error fetching bookings: ', err);
-      }
-    };
+    fetchMyClinics();
+  }, []);
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup function to reset overflow when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isModalOpen]);
+
+  useEffect(() => {
     fetchBookings();
   }, []);
 
-  console.log('Bookings state: ', bookings);
-
-  // Get user data from Redux state
-  const user = useSelector(state => state.auth.auth.user);
-
-  // Display a message if non-medicalStoreWorker user tries to access the page
   if (user?.role !== 'medicalStoreWorker') {
     return <div>You are not authorized to view this page</div>;
   }
@@ -165,8 +177,8 @@ function Dashboard() {
                     <ul className="space-y-2 pb-2">
                       <li></li>
                       <li>
-                        <a
-                          href="#"
+                        <Link
+                          to="/Dashboard"
                           className="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 group"
                         >
                           <svg
@@ -179,21 +191,12 @@ function Dashboard() {
                             <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
                           </svg>
                           <span className="ml-3">Dashboard</span>
-                        </a>
+                        </Link>
                       </li>
-
-                      {/* <li>
-                        <a href="#" className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group ">
-                           <svg className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                           </svg>
-                           <span className="ml-3 flex-1 whitespace-nowrap">Bookings</span>
-                        </a>
-                     </li> */}
                     </ul>
                     <div className="space-y-2 pt-2">
-                      <a
-                        href="#"
+                      <Link
+                        to="#"
                         target="_blank"
                         className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 group transition duration-75 flex items-center p-2"
                       >
@@ -210,7 +213,7 @@ function Dashboard() {
                           ></path>
                         </svg>
                         <span className="ml-3">Help</span>
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -220,7 +223,6 @@ function Dashboard() {
               className="bg-gray-900 opacity-50 hidden fixed inset-0 z-10"
               id="sidebarBackdrop"
             ></div>
-
             <div
               id="main-content"
               className="h-full w-full bg-gray-100 relative overflow-y-auto lg:ml-64"
@@ -228,140 +230,299 @@ function Dashboard() {
               <main>
                 <div className="pt-6 px-4">
                   <div className="w-full flex flex-col gap-4">
-                    <h1 className="w-full text-center text-bigtext text-4xl p-3">
-                      Create your clinics
-                    </h1>
-                    <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8 ">
-                      <form
-                        className="max-w-md mx-auto h-full w-full  relative overflow-y-auto "
-                        action="/upload"
-                        method="post"
-                        encType="multipart/form-data"
-                        onSubmit={handleFormSubmit}
-                      >
-                        <div className="relative z-0 w-full mb-5 group mt-2">
-                          <input
-                            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                            placeholder=" "
-                            required
-                            id="name"
-                            name="name"
-                            type="text"
-                            aria-label="Enter the clinic name"
-                            value={clinic.name}
-                            onChange={handleChange}
-                          />
-                          <label
-                            htmlFor="floating_email"
-                            className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                          >
-                            Clinic Name
-                          </label>
-                        </div>
-                        <div className=" relative z-0 w-full mb-5 group">
-                          <input
-                            type="text"
-                            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                            placeholder=" "
-                            id="address"
-                            name="address"
-                            aria-label="Enter the address"
-                            required
-                            value={clinic.address}
-                            onChange={handleChange}
-                          />
-                          <label
-                            htmlFor="floating_password"
-                            className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                          >
-                            Clinic Address
-                          </label>
-                        </div>
-                        <div className=" relative z-0 w-full mb-5 group">
-                          <input
-                            type="text"
-                            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                            placeholder=" "
-                            id="doctor"
-                            name="doctor"
-                            aria-label="Enter the doctor's name"
-                            required
-                            value={clinic.doctor}
-                            onChange={handleChange}
-                          />
-                          <label
-                            htmlFor="floating_doctor"
-                            className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                          >
-                            Doctor's Name
-                          </label>
-                        </div>
-                        <div className=" relative z-0 w-full mb-5 group">
-                          <input
-                            type="number"
-                            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                            placeholder=" "
-                            id="price"
-                            name="price"
-                            aria-label="Enter the price"
-                            required
-                            value={clinic.price}
-                            onChange={handleChange}
-                          />
-                          <label
-                            htmlFor="floating_price"
-                            className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                          >
-                            Price
-                          </label>
-                        </div>
-                        <div className="w-full mb-5 group">
-                          <label
-                            className="block mb-2 text-sm font-medium text-gray-900 "
-                            htmlFor="user_avatar"
-                          >
-                            Upload file
-                          </label>
-                          <input
-                            className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none "
-                            aria-describedby="user_avatar_help"
-                            id="user_avatar"
-                            type="file"
-                            name="image"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                          />
-                          <div className="mt-1 text-sm text-gray-500 " id="user_avatar_help">
-                            A profile picture is useful to confirm your account
+                    <div className="flex justify-between items-center">
+                      <h1 className="text-bigtext text-4xl p-3">Your Clinic</h1>
+                      {myClinics.length === 0 && (
+                        <button
+                          onClick={toggleModal}
+                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                        >
+                          Create New Clinic
+                        </button>
+                      )}
+                    </div>
+
+                    {myClinics.length > 0 && myClinics[0] && (
+                      <div className="bg-white shadow rounded-lg p-6 mb-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-4">
+                            {myClinics[0].image?.filename ? (
+                              <img
+                                src={`/api/image/${myClinics[0].image.filename}`}
+                                alt={myClinics[0].name}
+                                className="w-24 h-24 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center">
+                                <svg
+                                  className="w-12 h-12 text-gray-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                            <div>
+                              <h2 className="text-2xl font-bold text-gray-900">
+                                {myClinics[0].name}
+                              </h2>
+                              <p className="text-gray-600 flex items-center mt-1">
+                                <svg
+                                  className="w-5 h-5 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                </svg>
+                                {myClinics[0].address}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className="w-full mb-5 group flex flex-col">
-                          <label htmlFor="services">Services:</label>
-                          <span className="border border-1 border-gray-500 rounded-md p-2 flex flex-col">
-                            {servicesList.map((service, idx) => (
-                              <span key={idx}>
-                                <input
-                                  type="checkbox"
-                                  className="mr-1"
-                                  id={service}
-                                  name="services[]"
-                                  value={service}
-                                  onChange={handleCheckboxChange}
-                                />
-                                <label htmlFor={service}>{service}</label>
-                              </span>
-                            ))}
-                          </span>
-                        </div>
 
-                        <button
-                          type="submit"
-                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center "
-                        >
-                          Submit
-                        </button>
-                      </form>
-                    </div>
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Clinic Information
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="flex items-center">
+                                <svg
+                                  className="w-5 h-5 text-gray-500 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                  />
+                                </svg>
+                                <span className="text-gray-600">Doctor: {myClinics[0].doctor}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <svg
+                                  className="w-5 h-5 text-gray-500 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="text-gray-600">Price: ${myClinics[0].price}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Services Offered
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {myClinics[0].services.map((service, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                                >
+                                  {service}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {isModalOpen && (
+                      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
+                        <div className="relative mx-auto p-6 border w-1/3 shadow-lg rounded-md bg-white">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Create New Clinic</h3>
+                            <button
+                              onClick={toggleModal}
+                              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                  clipRule="evenodd"
+                                ></path>
+                              </svg>
+                            </button>
+                          </div>
+                          <form
+                            className="w-full relative overflow-y-auto"
+                            action="/upload"
+                            method="post"
+                            encType="multipart/form-data"
+                            onSubmit={handleFormSubmit}
+                          >
+                            <div className="relative z-0 w-full mb-5 group mt-2">
+                              <input
+                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" "
+                                required
+                                id="name"
+                                name="name"
+                                type="text"
+                                aria-label="Enter the clinic name"
+                                value={clinic.name}
+                                onChange={handleChange}
+                              />
+                              <label
+                                htmlFor="floating_email"
+                                className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                              >
+                                Clinic Name
+                              </label>
+                            </div>
+                            <div className=" relative z-0 w-full mb-5 group">
+                              <input
+                                type="text"
+                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" "
+                                id="address"
+                                name="address"
+                                aria-label="Enter the address"
+                                required
+                                value={clinic.address}
+                                onChange={handleChange}
+                              />
+                              <label
+                                htmlFor="floating_password"
+                                className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                              >
+                                Clinic Address
+                              </label>
+                            </div>
+                            <div className=" relative z-0 w-full mb-5 group">
+                              <input
+                                type="text"
+                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" "
+                                id="doctor"
+                                name="doctor"
+                                aria-label="Enter the doctor's name"
+                                required
+                                value={clinic.doctor}
+                                onChange={handleChange}
+                              />
+                              <label
+                                htmlFor="floating_doctor"
+                                className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                              >
+                                Doctor's Name
+                              </label>
+                            </div>
+                            <div className=" relative z-0 w-full mb-5 group">
+                              <input
+                                type="number"
+                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" "
+                                id="price"
+                                name="price"
+                                aria-label="Enter the price"
+                                required
+                                value={clinic.price}
+                                onChange={handleChange}
+                              />
+                              <label
+                                htmlFor="floating_price"
+                                className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 p peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                              >
+                                Price
+                              </label>
+                            </div>
+                            <div className="w-full mb-5 group">
+                              <label
+                                className="block mb-2 text-sm font-medium text-gray-900 "
+                                htmlFor="user_avatar"
+                              >
+                                Upload file
+                              </label>
+                              <input
+                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none "
+                                aria-describedby="user_avatar_help"
+                                id="user_avatar"
+                                type="file"
+                                name="image"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                              />
+                              <div className="mt-1 text-sm text-gray-500 " id="user_avatar_help">
+                                A profile picture is useful to confirm your account
+                              </div>
+                            </div>
+                            <div className="w-full mb-5 group flex flex-col">
+                              <label htmlFor="services">Services:</label>
+                              <span className="border border-1 border-gray-500 rounded-md p-2 flex flex-col">
+                                {servicesList.map((service, idx) => (
+                                  <span key={idx}>
+                                    <input
+                                      type="checkbox"
+                                      className="mr-1"
+                                      id={service}
+                                      name="services[]"
+                                      value={service}
+                                      onChange={handleCheckboxChange}
+                                    />
+                                    <label htmlFor={service}>{service}</label>
+                                  </span>
+                                ))}
+                              </span>
+                            </div>
+
+                            <div className="flex justify-end gap-4 mt-4">
+                              <button
+                                type="button"
+                                onClick={toggleModal}
+                                className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                              >
+                                Create Clinic
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8 mb-14 ">
                       <div className="mb-4 flex items-center justify-between">
@@ -370,14 +531,6 @@ function Dashboard() {
                           <span className="text-base font-normal text-gray-500">
                             This is a list of latest bookings
                           </span>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <a
-                            href="#"
-                            className="text-sm font-medium text-cyan-600 hover:bg-gray-100 rounded-lg p-2"
-                          >
-                            View all
-                          </a>
                         </div>
                       </div>
                       <div className="flex flex-col mt-8">
