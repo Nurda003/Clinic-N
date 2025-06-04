@@ -1,14 +1,14 @@
-import { TYPES } from "../actions/notifyAction";
+import { TYPES } from '../actions/notifyAction';
 
-const initalState = {}
+const initalState = {};
 
-const notifyReducer = (state = {initalState}, action) => {
-    switch(action.type){
-        case TYPES.NOTIFY:
-            return action.payload
-        default:
-            return state
-    }
-}
+const notifyReducer = (state = { initalState }, action) => {
+  switch (action.type) {
+    case TYPES.NOTIFY:
+      return action.payload;
+    default:
+      return state;
+  }
+};
 
-export default notifyReducer
+export default notifyReducer;

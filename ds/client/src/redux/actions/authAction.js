@@ -1,18 +1,17 @@
-import { postDataAPI } from "../../utils/fetchData"
-import axios from 'axios'
+import { postDataAPI } from '../../utils/fetchData';
+import axios from 'axios';
 
 export const TYPES = {
-  AUTH: 'AUTH'
-}
+  AUTH: 'AUTH',
+};
 
-
-export const login = (data) => async (dispatch) => {
+export const login = data => async dispatch => {
   try {
     const res = await axios.post('/api/login', data);
     if (res.status === 200 && res.data.user && res.data.access_token) {
       const { user, access_token, refresh_token } = res.data;
       dispatch({
-        type: "AUTH",
+        type: 'AUTH',
         payload: {
           token: access_token,
           user: user,
@@ -20,27 +19,26 @@ export const login = (data) => async (dispatch) => {
       });
       localStorage.setItem('firstLogin', true);
       localStorage.setItem('authToken', access_token);
-      localStorage.setItem('user', JSON.stringify(user));  
-      localStorage.setItem('refreshToken', refresh_token); 
-    }
-    else throw new Error('Login was not successful');
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('refreshToken', refresh_token);
+    } else throw new Error('Login was not successful');
   } catch (err) {
     dispatch({
-      type: "NOTIFY",
+      type: 'NOTIFY',
       payload: {
         error: err.response.data.msg || err.message,
       },
     });
-    throw err;  // Important. This allows the calling function to know that login failed.
+    throw err; // Important. This allows the calling function to know that login failed.
   }
 };
 
-export const logout = () => async (dispatch) => {
+export const logout = () => async dispatch => {
   const res = await postDataAPI('logout');
-  console.log('logout response: ', res); 
+  console.log('logout response: ', res);
 
   dispatch({
-    type: "AUTH",
+    type: 'AUTH',
     payload: {
       token: null,
       user: null,
@@ -51,19 +49,19 @@ export const logout = () => async (dispatch) => {
   localStorage.removeItem('user');
   localStorage.removeItem('authToken');
   localStorage.removeItem('refreshToken');
-// Remove the refresh token
+  // Remove the refresh token
 
   dispatch({
-    type: "NOTIFY",
+    type: 'NOTIFY',
     payload: {
-      success: res.data.msg
+      success: res.data.msg,
     },
   });
 };
 
-export const register = (data) => async (dispatch) => {
+export const register = data => async dispatch => {
   dispatch({ type: 'NOTIFY', payload: { loading: true } });
-  
+
   const endpoint = data.role === 'medicalStoreWorker' ? 'register-medical-worker' : 'register';
 
   try {
@@ -72,40 +70,38 @@ export const register = (data) => async (dispatch) => {
     console.log('register data: ', data);
     if (res.status >= 200 && res.status < 300) {
       dispatch({
-        type: "NOTIFY",
+        type: 'NOTIFY',
         payload: {
-          success: res.data.msg
-        }
+          success: res.data.msg,
+        },
       });
 
       return { success: true };
-
     } else {
       const errorMsg = res.data.msg || 'Registration failed';
       dispatch({
         type: 'NOTIFY',
         payload: {
-          error: errorMsg
-        }
+          error: errorMsg,
+        },
       });
 
       return { success: false, error: errorMsg };
     }
-
-  } catch (error) { 
+  } catch (error) {
     const errorMsg = error.response?.data?.msg || 'An unexpected error occurred. Please try again.';
     dispatch({
       type: 'NOTIFY',
       payload: {
-        error: errorMsg
-      }
+        error: errorMsg,
+      },
     });
 
     return { success: false, error: errorMsg };
   }
-}
+};
 
-export const refreshToken = () => async (dispatch) => {
+export const refreshToken = () => async dispatch => {
   const firstLogin = localStorage.getItem('firstLogin');
 
   if (firstLogin) {
@@ -114,19 +110,23 @@ export const refreshToken = () => async (dispatch) => {
 
       if (!refreshToken) throw new Error('Refresh token not found in local storage');
 
-      const res = await axios.post(`/api/refresh_token`, {}, {
-        headers: {
-          "x-refresh-token": refreshToken
+      const res = await axios.post(
+        `/api/refresh_token`,
+        {},
+        {
+          headers: {
+            'x-refresh-token': refreshToken,
+          },
         }
-      });
+      );
 
       const { access_token, refresh_token } = res.data;
 
-      localStorage.setItem('refreshToken', refresh_token); 
+      localStorage.setItem('refreshToken', refresh_token);
       const user = JSON.parse(localStorage.getItem('user'));
 
       dispatch({
-        type: "AUTH",
+        type: 'AUTH',
         payload: {
           token: access_token,
           user: user,
@@ -137,4 +137,4 @@ export const refreshToken = () => async (dispatch) => {
       dispatch({ type: 'NOTIFY', payload: { error: err.message } });
     }
   }
-}; 
+};

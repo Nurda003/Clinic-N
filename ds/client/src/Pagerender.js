@@ -1,33 +1,31 @@
-import React from 'react'
-import { generatePath, useParams } from 'react-router-dom'
-import NotFound from './comps/NotFound'
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import NotFound from './comps/NotFound';
 
 function Pagerender() {
+  const generatePage = page => {
+    const component = () => require(`./pages/${page}`).default;
 
-    const generatePage = (page) => {
-        const component = () => require(`./pages/${page}`).default
-
-        try {
-            return React.createElement(component())
-        } catch (err) {
-            return <NotFound />
-        }
+    try {
+      return React.createElement(component());
+    } catch (err) {
+      return <NotFound />;
     }
+  };
 
-    console.log(useParams())
+  console.log(useParams());
 
-    const {page,id} = useParams()
+  const { page, id } = useParams();
 
-    let pageNum = ''
+  let pageNum = '';
 
-    if (id){
-        pageNum = `${page}/${id}`
-    }
-    else{
-        pageNum = `${page}`
-    }
+  if (id) {
+    pageNum = `${page}/${id}`;
+  } else {
+    pageNum = `${page}`;
+  }
 
-  return generatePage(pageNum)
+  return generatePage(pageNum);
 }
 
-export default Pagerender
+export default Pagerender;

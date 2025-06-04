@@ -15,7 +15,7 @@ const imageCache = new NodeCache();
 const buildPath = path.resolve(__dirname, '../ds/client/build');
 const Booking = require('../server/models/bookingModel');
 const auth = require("../server/controllers/auth"); 
-
+const FavoriteClinic = require('../server/models/favoriteClinicModel');
 
 app.use(express.json());
 
@@ -94,7 +94,6 @@ app.get('/api/image/:filename', async (req, res) => {
     return;
   }
 
-
   try {
       await client.connect();
       const db = client.db("test"); 
@@ -126,7 +125,47 @@ app.get('/api/image/:filename', async (req, res) => {
   }
 });
 
-//router for back end booking
+app.post('/api/favorite-clinics', auth, async (req, res) => {
+  try {
+    const { clinicId } = req.body;
+    const userId = req.user.id;
+    const existingFavorite = await FavoriteClinic.findOne({ userId, clinicId });
+    if (existingFavorite) {
+      return res.status(400).json({ msg: "Clinic already in favorites" });
+    }
+    const newFavorite = new FavoriteClinic({ userId, clinicId });
+    await newFavorite.save();
+    res.json(newFavorite);
+  } catch (err) {
+    console.error('Error adding favorite clinic:', err);
+    res.status(500).json({ msg: 'Error adding favorite clinic', error: err.message });
+  }
+});
+
+app.delete('/api/favorite-clinics/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const favorite = await FavoriteClinic.findOneAndDelete({ userId, clinicId: id });
+    if (!favorite) {
+      return res.status(404).json({ msg: "Favorite clinic not found" });
+    }
+    res.json({ msg: "Favorite clinic removed", favorite });
+  } catch (err) {
+    console.error('Error removing favorite clinic:', err);
+    res.status(500).json({ msg: 'Error removing favorite clinic', error: err.message });
+  }
+});
+
+app.get('/api/favorite-clinics', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const favoriteClinics = await FavoriteClinic.find({ userId });
+    res.json(favoriteClinics);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/api/bookings', auth, async (req, res) => {
   try {
