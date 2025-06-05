@@ -1,39 +1,38 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     fullname: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 25
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 25,
     },
     username: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 25,
-        unique: true
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 25,
     },
     email: {
-        type: String,
-        required: true,
-        trim: true,
-        unique: true
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
 
-    role: { type: String, default: 'user', enum: ['user', 'medicalStoreWorker']},
-    gender: {type: String, default: 'male'},
-    saved: [{type: mongoose.Types.ObjectId, ref: 'user'}],
+    role: { type: String, default: 'user', enum: ['user', 'medicalStoreWorker'] },
+    gender: { type: String, default: 'male' },
+    saved: [{ type: mongoose.Types.ObjectId, ref: 'user' }],
     clinics: [{ type: mongoose.Schema.Types.ObjectId, ref: 'clinic' }],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-}, {
-    timestamps: true
-})
-
-
-module.exports = mongoose.model('user', userSchema)
+module.exports = mongoose.model('user', userSchema);
