@@ -13,7 +13,6 @@ function Clinics() {
   const initialFormState = {
     firstName: '',
     lastName: '',
-    email: '',
     phoneNumber: '',
     date: '',
     message: '',
@@ -96,7 +95,7 @@ function Clinics() {
     const bookingData = {
       firstName: bookingForm.firstName,
       lastName: bookingForm.lastName,
-      email: bookingForm.email,
+      email: auth.user.email,
       phoneNumber: bookingForm.phoneNumber,
       date: bookingForm.date,
       message: bookingForm.message,
@@ -230,10 +229,12 @@ function Clinics() {
       <div className="flex flex-col justify-center items-center py-5">
         <div className="flex flex-col w-11/12 justify-center items-center">
           {clinics
-            .filter(clinic =>
-              clinic.services.some(service =>
-                service.toLowerCase().includes(searchTerm.toLowerCase())
-              )
+            .filter(
+              clinic =>
+                clinic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                clinic.services.some(service =>
+                  service.toLowerCase().includes(searchTerm.toLowerCase())
+                )
             )
             .map(clinic => (
               <div
@@ -405,26 +406,6 @@ function Clinics() {
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <div className="flex flex-col mt-2">
-                      <label
-                        id="emailLabel"
-                        htmlFor="email"
-                        className="text-lg text-bigtext ml-1 font-medium"
-                      >
-                        Email:
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        aria-describedby="emailLabel"
-                        className="p-2 border border-gray-400 rounded-xl mt-2"
-                        placeholder="Email"
-                        value={bookingForm.email}
-                        onChange={handleFormFieldChange}
-                      />
-                    </div>
                     <div className="flex flex-col mt-2">
                       <label
                         id="phoneNumber"
