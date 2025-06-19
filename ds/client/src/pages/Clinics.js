@@ -268,17 +268,19 @@ function Clinics() {
                       </div>
                       <div className="flex gap-4 items-center">
                         <p className="bg-white border-blue-600 border w-9 text-bigtext text-sm font-semibold justify-center items-center p-1.5 rounded">
-                          <span>{clinic.rating}</span>
+                          <span className="flex justify-center items-center">{clinic.rating}</span>
                         </p>
                         <p className="font-semibold">{getRatingText(clinic.rating)}</p>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <p className="text-base text-smalltext font-semibold">Specialist</p>
-                      <p className="text-xl text-blue-700 font-semibold max-w-80">
+                      <p className="text-base text-smalltext font-semibold text-right">
+                        Specialist
+                      </p>
+                      <p className="text-xl text-blue-700 font-semibold max-w-40 overflow-hidden text-ellipsis whitespace-nowrap">
                         Dr. {clinic.doctor}
                       </p>
-                      <p className="text-3xl text-price font-bold">${clinic.price}</p>
+                      <p className="text-3xl text-price font-bold text-right">{clinic.price} ₸</p>
                     </div>
                   </div>
                   <hr className="w-full bg-gray-500 my-4" />
